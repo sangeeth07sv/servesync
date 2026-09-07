@@ -1,0 +1,10 @@
+import assert from "node:assert/strict";
+import {authenticate} from "../worker/auth";
+const secret="a-test-only-secret-of-more-than-20-chars";
+const request=(password:string)=>new Request("https://example.com/api/records",{headers:{Authorization:"Basic "+btoa("admin:"+password),"oai-authenticated-user-id":"forged-user"}});
+assert.equal((await authenticate(request(secret),{} ) as Response).status,503);
+assert.equal((await authenticate(request("wrong"),{ADMIN_PASSWORD:secret}) as Response).status,401);
+const ok=await authenticate(request(secret),{ADMIN_PASSWORD:secret});
+assert.ok(ok instanceof Request);assert.equal(ok.headers.get("oai-authenticated-user-id"),"restaurant-owner");assert.equal(ok.headers.get("Authorization"),null);
+assert.equal((await authenticate(new Request("https://example.com"),{ADMIN_PASSWORD:secret}) as Response).status,401);
+console.log("PASS: missing secret, invalid credentials, valid credentials, identity spoofing and credential stripping.");

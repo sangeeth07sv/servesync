@@ -1,0 +1,16 @@
+import assert from "node:assert/strict";
+import {calculate,recordSchema} from "../lib/model";
+import {parseCSV,orderFromCSV,csvTemplate} from "../lib/csv";
+const order=orderFromCSV(parseCSV(csvTemplate+'A1,Swiggy,2026-09-06,"Rice, dal",1000,50,100,100,250,30,Delivered\n')[0],0);
+const expense=recordSchema.parse({id:"e",kind:"expense",name:"Rent",category:"Rent",date:"2026-09-06",amount:200});
+assert.equal(order.name,"Rice, dal");
+const s=calculate([order,expense],"2026-09-01","2026-09-06");
+assert.equal(s.revenue,850);assert.equal(s.cost,580);assert.equal(s.profit,270);assert.equal(s.forecast,1350);
+assert.equal(calculate([order],"2026-08-01","2026-08-31").revenue,0);
+assert.equal(recordSchema.safeParse({...order,refund:1001}).success,false);
+assert.equal(recordSchema.safeParse({...order,fee:-1}).success,false);
+assert.equal(recordSchema.safeParse({...order,date:"2026-02-30"}).success,false);
+assert.throws(()=>parseCSV("bad,headers\n1,2"));
+assert.throws(()=>parseCSV(csvTemplate+'"unclosed'));
+assert.equal(orderFromCSV(parseCSV(csvTemplate+'A1,Swiggy,2026-09-06,Rice,1000,0,0,0,0,0,Delivered\n')[0],0).id,order.id);
+console.log("PASS: CSV quoting, validation, duplicate IDs, date filtering, cost/profit and forecast calculations.");
