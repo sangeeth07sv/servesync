@@ -34,6 +34,17 @@ const worker = {
     if(authenticated instanceof Response)return authenticated;
     request=authenticated;
     const url = new URL(request.url);
+    // Serve frontend files after administrator authentication.
+if (
+  (request.method === "GET" || request.method === "HEAD") &&
+  (
+    url.pathname.startsWith("/assets/") ||
+    url.pathname === "/favicon.svg" ||
+    url.pathname === "/kitchen.png"
+  )
+) {
+  return env.ASSETS.fetch(request);
+}
 
     if (url.pathname === "/_vinext/image") {
       const allowedWidths = [...DEFAULT_DEVICE_SIZES, ...DEFAULT_IMAGE_SIZES];

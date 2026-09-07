@@ -9,12 +9,14 @@
     "binding": "ASSETS",
     "run_worker_first": true
   },
-  "d1_databases": [{
-    "binding": "DB",
-    "database_name": "servesync-db",
-    "database_id": "00000000-0000-4000-8000-000000000000",
-    "migrations_dir": "./drizzle"
-  }],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "servesync-db",
+      "database_id": "b53bc982-ead1-4767-b017-9c64c76c48ac",
+      "migrations_dir": "./drizzle"
+    }
+  ],
   "vars": {
     "ADMIN_USERNAME": "admin",
     "OPENAI_MODEL": ""
