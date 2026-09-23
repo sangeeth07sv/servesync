@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { detectFeeAnomalies } from "./anomaly.ts";
+import { detectFeeAnomalies } from "../lib/anomaly.ts";
 
 const order = (id, fee, partner = "Swiggy") => ({id: String(id), kind: "order", reference: `ORD-${id}`, partner, date: "2026-09-24", name: "Meal", gross: 100, discount: 0, refund: 0, fee, food: 25, packaging: 5, status: "Delivered"});
 
