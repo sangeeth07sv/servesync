@@ -24,4 +24,14 @@ jobs:
       - run: npm run typecheck
       - run: npm test
       - run: npm run db:remote
-      - run: npx wrangler deploy
+      - name: Deploy and show live URL
+        run: |
+          set -o pipefail
+          npx wrangler deploy | tee deploy-output.txt
+          url=$(grep -oE 'https://[^[:space:]]+\\.workers\\.dev' deploy-output.txt | head -n 1 || true)
+          if [ -n "$url" ]; then
+            echo "## ServeSync live app" >> "$GITHUB_STEP_SUMMARY"
+            echo "$url" >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Deployment finished. Open Cloudflare Workers & Pages → servesync → Settings → Domains & Routes for its URL." >> "$GITHUB_STEP_SUMMARY"
+          fi
