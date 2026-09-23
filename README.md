@@ -24,6 +24,8 @@ Live Swiggy/Zomato/ONDC sync is NOT implemented. Authorized partner-specific ada
 
 Generative AI is implemented as an optional OpenAI request, but no API key/model is included. Calculated insights remain usable without an AI provider.
 
+The AI Insights page also detects unusually high partner fees without an API key. It compares each non-cancelled order against at least seven other orders from the same partner within the selected date range, using median fee rate and median absolute deviation. It requires a gap of at least five percentage points and shows the reference, observed rate and typical rate for manual review. It is an anomaly signal, not a prediction or a claim that a fee is incorrect. Run `node --test tests/anomaly.test.mjs` to check its core cases.
+
 All order amounts are recognized as entered, irrespective of status. Enter actual refunds and incurred costs for cancelled orders. Use sales excluding pass-through taxes. Store food, packaging and platform costs on the order; record only additional overheads under Finance to avoid double counting.
 
 Profit = gross - discounts - refunds - fees - food - packaging - overheads.
