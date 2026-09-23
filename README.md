@@ -1,43 +1,43 @@
-# ServeSync — GitHub deployment edition
+# ServeSync
 
-A single-restaurant dashboard with a React frontend, server API and persistent Cloudflare D1 SQL database.
+A full stack restaurant dashboard built with Next.js, TypeScript, Supabase Auth and Postgres. The responsive frontend manages orders, menu items, expenses and finance reports. Next.js API routes validate data and enforce user identity. Supabase row level security isolates each restaurant account.
 
-This edition runs independently of ChatGPT. A single administrator signs in through the browser's username/password prompt. Keep this repository private if you do not want to share its code.
+## Features
 
-## What you receive
+- Email sign-up and sign-in
+- Persistent order, menu and expense records
+- CSV order import and finance export
+- Explainable fee anomaly detection: compares an order's fee rate with at least seven other orders from the same partner, using the median and median absolute deviation
+- Optional generative analysis of aggregated figures (requires your own provider key)
 
-- Frontend: app/dashboard.tsx (overview, menu, orders, finance, integrations, insights).
-- Backend: app/api/records/route.ts and app/api/insights/route.ts.
-- Database schema: db/schema.ts; SQL migration: drizzle/0000_overrated_union_jack.sql.
-- Authentication: worker/auth.ts. Requires a random password at least 20 characters long.
-- Hosting configuration: wrangler.jsonc.
-- GitHub automatic deployment: .github/workflows/deploy.yml.
-- Full setup: DEPLOY.md.
+The anomaly detector works without a paid AI key. Partner APIs are not connected; imports use the ServeSync CSV template. Financial forecasts are simple run-rate estimates.
 
-Menu items, orders and expenses are saved to D1, not browser storage. Frontend and API share one origin; there is no separate backend URL or DATABASE_URL to paste. The DB binding connects backend queries to D1.
+## Architecture
 
-## Current capabilities and limits
+| Layer | Implementation |
+| --- | --- |
+| Frontend | Next.js App Router, React, responsive dashboard |
+| Backend | Next.js route handlers at /api/records and /api/insights |
+| Database | Supabase Postgres, records stored as JSONB |
+| Authentication | Supabase Auth bearer tokens validated on every API request |
+| Access control | Postgres row level security keyed by auth.uid() |
+| Deployment | Vercel for frontend and API; Supabase for Auth and database |
 
-Menu create/edit/delete, local availability, order create/edit/delete, validated normalized CSV imports, expense records, date-filtered operating profit/loss, financial CSV export and a linear earnings estimate are implemented.
+## Run locally
 
-Live Swiggy/Zomato/ONDC sync is NOT implemented. Authorized partner-specific adapters still need to be developed and tested with official access. Local menu edits do not update partner menus. CSV uses the ServeSync template; arbitrary partner exports must first be mapped to it.
+Copy .env.example to .env.local and enter your Supabase project URL and publishable key. Apply supabase/schema.sql to a dedicated Supabase project, then run:
 
-Generative AI is implemented as an optional OpenAI request, but no API key/model is included. Calculated insights remain usable without an AI provider.
+```bash
+npm ci
+npm run dev
+```
 
-The AI Insights page also detects unusually high partner fees without an API key. It compares each non-cancelled order against at least seven other orders from the same partner within the selected date range, using median fee rate and median absolute deviation. It requires a gap of at least five percentage points and shows the reference, observed rate and typical rate for manual review. It is an anomaly signal, not a prediction or a claim that a fee is incorrect. Run `node --test tests/anomaly.test.mjs` to check its core cases.
+See [DEPLOY.md](DEPLOY.md) for setup and production deployment. Never commit passwords, database connection strings or provider API keys.
 
-All order amounts are recognized as entered, irrespective of status. Enter actual refunds and incurred costs for cancelled orders. Use sales excluding pass-through taxes. Store food, packaging and platform costs on the order; record only additional overheads under Finance to avoid double counting.
+```bash
+npm run typecheck
+npm test
+npm run build
+```
 
-Profit = gross - discounts - refunds - fees - food - packaging - overheads.
-Forecast = selected-period operating profit / selected calendar days * 30.
-The estimate is not statutory accounting, a guarantee, or a calibrated AI forecast.
-
-## Data migration
-
-This creates a NEW empty database in your own Cloudflare account. It does not copy data from the private ChatGPT-hosted site.
-
-## Security
-
-Use HTTPS and a unique randomly generated admin password. Cloudflare secrets hold ADMIN_PASSWORD and OPENAI_API_KEY; never put them in GitHub source. The browser caches Basic authentication for its session; close the browser session when finished, especially on shared machines. Rotate ADMIN_PASSWORD to revoke access. This is single-admin access, not a multi-staff role system.
-
-GitHub Actions requires account-scoped Cloudflare API credentials in repository secrets. Never commit an API token. New database migrations should be append-only after they have been applied.
+The old Cloudflare Worker and D1 setup has been removed from the application. Old D1 records are not automatically copied into the new Postgres database.
