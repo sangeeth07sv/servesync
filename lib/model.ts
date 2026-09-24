@@ -7,11 +7,12 @@ export const recordSchema=z.union([
  z.object({id:z.string().min(1).max(100),kind:z.literal("order"),reference:z.string().min(1).max(80),partner:z.string().min(1).max(80),date,name:z.string().min(1).max(200),gross:money,discount:money,refund:money,fee:money,food:money,packaging:money,status:z.enum(["Delivered","Preparing","Ready","Cancelled"])}).refine(o=>o.discount+o.refund<=o.gross,"Discount + refund cannot exceed gross")
 ]);
 export type RecordData=z.infer<typeof recordSchema>;
+type OrderRecord=Extract<RecordData,{kind:"order"}>;
 export const rupees=(v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(v);
 export function calculate(rows:RecordData[],start:string,end:string){
  const selected=rows.filter(r=>r.kind!=="menu"&&r.date>=start&&r.date<=end);
- const orders=selected.filter(r=>r.kind==="order"&&r.status!=="Cancelled");
- const total=(key:string)=>orders.reduce((s,o)=>s+Math.round((Number((o as any)[key])||0)*100),0)/100;
+ const orders=selected.filter((r):r is OrderRecord=>r.kind==="order"&&r.status!=="Cancelled");
+ const total=(key:"gross"|"discount"|"refund"|"fee"|"food"|"packaging")=>orders.reduce((s,o)=>s+Math.round(o[key]*100),0)/100;
  const gross=total("gross"),discount=total("discount"),refund=total("refund"),fees=total("fee"),food=total("food"),packaging=total("packaging");
  const overhead=selected.filter(r=>r.kind==="expense").reduce((s,r)=>s+Math.round(r.amount*100),0)/100;
  const revenue=+(gross-discount-refund).toFixed(2),cost=+(fees+food+packaging+overhead).toFixed(2),profit=+(revenue-cost).toFixed(2);

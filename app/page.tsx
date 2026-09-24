@@ -1,17 +1,20 @@
 "use client";
 import { useEffect, useState } from "react";
 import Dashboard from "./dashboard";
-import { supabase } from "@/lib/supabase-client";
+import { isSupabaseConfigured, supabase } from "@/lib/supabase-client";
 
 export default function Home() {
   const [user, setUser] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(isSupabaseConfigured);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [mode, setMode] = useState<"signin" | "signup">("signin");
   const [message, setMessage] = useState("");
   const [busy, setBusy] = useState(false);
   useEffect(() => {
+    if (!isSupabaseConfigured) {
+      return;
+    }
     void supabase.auth.getSession().then(({ data }) => { setUser(data.session?.user.email ?? null); setLoading(false); });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => setUser(session?.user.email ?? null));
     return () => subscription.unsubscribe();
@@ -24,6 +27,7 @@ export default function Home() {
     else if (mode === "signup" && !result.data.session) setMessage("Account created. Confirm your email, then sign in.");
   }
   if (loading) return <main className="auth-shell"><p>Opening ServeSync…</p></main>;
+  if (!isSupabaseConfigured) return <main className="auth-shell"><section className="auth-card"><strong className="auth-logo">ServeSync</strong><h1>Database setup required</h1><p>Add the Supabase project URL and publishable key to the deployment environment, then redeploy.</p></section></main>;
   if (user) return <><div className="auth-bar">Signed in as {user} <button onClick={() => void supabase.auth.signOut()}>Sign out</button></div><Dashboard key={user}/></>;
   return <main className="auth-shell"><form className="auth-card" onSubmit={submit}>
     <strong className="auth-logo">ServeSync</strong><h1>{mode === "signin" ? "Sign in to your restaurant" : "Create your restaurant account"}</h1>
