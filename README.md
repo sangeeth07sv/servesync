@@ -1,5 +1,7 @@
 # ServeSync
 
+[Open the live app](https://servesync-six.vercel.app/)
+
 A full stack restaurant dashboard built with Next.js, TypeScript, Supabase Auth and Postgres. The responsive frontend manages orders, menu items, expenses and finance reports. Next.js API routes validate data and enforce user identity. Supabase row level security isolates each restaurant account.
 
 ## Features
