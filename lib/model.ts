@@ -10,7 +10,7 @@ export type RecordData=z.infer<typeof recordSchema>;
 export const rupees=(v:number)=>new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:2}).format(v);
 export function calculate(rows:RecordData[],start:string,end:string){
  const selected=rows.filter(r=>r.kind!=="menu"&&r.date>=start&&r.date<=end);
- const orders=selected.filter(r=>r.kind==="order");
+ const orders=selected.filter(r=>r.kind==="order"&&r.status!=="Cancelled");
  const total=(key:string)=>orders.reduce((s,o)=>s+Math.round((Number((o as any)[key])||0)*100),0)/100;
  const gross=total("gross"),discount=total("discount"),refund=total("refund"),fees=total("fee"),food=total("food"),packaging=total("packaging");
  const overhead=selected.filter(r=>r.kind==="expense").reduce((s,r)=>s+Math.round(r.amount*100),0)/100;
