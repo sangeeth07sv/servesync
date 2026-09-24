@@ -16,5 +16,5 @@ export function calculate(rows:RecordData[],start:string,end:string){
  const overhead=selected.filter(r=>r.kind==="expense").reduce((s,r)=>s+Math.round(r.amount*100),0)/100;
  const revenue=+(gross-discount-refund).toFixed(2),cost=+(fees+food+packaging+overhead).toFixed(2),profit=+(revenue-cost).toFixed(2);
  const days=Math.max(1,Math.round((Date.parse(end)-Date.parse(start))/86400000)+1);
- return {gross,discount,refund,fees,food,packaging,overhead,revenue,cost,profit,orders:orders.length,margin:revenue?profit/revenue*100:0,days,forecast:profit/days*30};
+ return {gross,discount,refund,fees,food,packaging,overhead,revenue,cost,profit,orders:orders.length,margin:revenue?profit/revenue*100:0,days,forecast:+(profit/days*30).toFixed(2)};
 }
