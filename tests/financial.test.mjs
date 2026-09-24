@@ -45,7 +45,7 @@ test("filters by date inclusively and rounds decimal amounts", () => {
 });
 
 test("rejects impossible dates, invalid money and refunds above gross", () => {
-  assert.equal(recordSchema.safeParse(order({date: "2026-02-30"})).success, false);
+  assert.equal(recordSchema.safeParse({...order(), date: "2026-02-30"}).success, false);
   assert.equal(recordSchema.safeParse({...order(), fee: -1}).success, false);
   assert.equal(recordSchema.safeParse({...order(), refund: 1001}).success, false);
 });
